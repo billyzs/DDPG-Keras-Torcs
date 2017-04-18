@@ -14,17 +14,17 @@ from ReplayBuffer import ReplayBuffer
 from ActorNetwork import ActorNetwork
 from CriticNetwork import CriticNetwork
 from OU import OU
-import timeit
+
 
 OU = OU()       #Ornstein-Uhlenbeck Process
 
-def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
+def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     BUFFER_SIZE = 100000
     BATCH_SIZE = 32
     GAMMA = 0.99
     TAU = 0.001     #Target Network HyperParameters
-    LRA = 0.0001    #Learning rate for Actor
-    LRC = 0.001     #Lerning rate for Critic
+    LRA = 1e-3  # 0.0001    #Learning rate for Actor
+    LRC = 1e-3  #0.001     #Lerning rate for Critic
 
     action_dim = 3  #Steering/Acceleration/Brake
     state_dim = 29  #of sensors input
@@ -54,7 +54,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
     buff = ReplayBuffer(BUFFER_SIZE)    #Create replay buffer
 
     # Generate a Torcs environment
-    env = TorcsEnv(vision=vision, throttle=True,gear_change=False)
+    env = TorcsEnv(vision=vision, throttle=True, gear_change=False)
 
     #Now load the weight
     print("Now we load the weight")
@@ -70,7 +70,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
     print("TORCS Experiment Start.")
     for i in range(episode_count):
 
-        print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
+        print(("Episode : " + str(i) + " Replay Buffer " + str(buff.count())))
 
         if np.mod(i, 3) == 0:
             ob = env.reset(relaunch=True)   #relaunch TORCS every 3 episode because of the memory leak error
@@ -91,10 +91,10 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
             noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], -0.1 , 1.00, 0.05)
 
-            #The following code do the stochastic brake
-            #if random.random() <= 0.1:
-            #    print("********Now we apply the brake***********")
-            #    noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2],  0.2 , 1.00, 0.10)
+            # The following code do the stochastic brake
+            if random.random() <= 0.1:
+                print("********Now we apply the brake***********")
+                noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2],  0.2 , 1.00, 0.10)
 
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
@@ -134,7 +134,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
             total_reward += r_t
             s_t = s_t1
         
-            print("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss)
+            print(("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss))
         
             step += 1
             if done:
@@ -151,12 +151,13 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
                 with open("criticmodel.json", "w") as outfile:
                     json.dump(critic.model.to_json(), outfile)
 
-        print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
-        print("Total Step: " + str(step))
+        print(("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward)))
+        print(("Total Step: " + str(step)))
         print("")
 
     env.end()  # This is for shutting down TORCS
     print("Finish.")
 
 if __name__ == "__main__":
+
     playGame()

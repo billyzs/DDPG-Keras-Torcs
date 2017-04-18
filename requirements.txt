@@ -1,5 +1,6 @@
 appdirs==1.4.3
 gym==0.8.1
+h5py==2.7.0
 Keras==1.1.0
 numpy==1.12.1
 packaging==16.8
