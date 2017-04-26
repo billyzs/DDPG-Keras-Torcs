@@ -34,8 +34,8 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     vision = False
 
     EXPLORE = 100000.
-    episode_count = 2000
-    max_steps = 100000
+    episode_count = 200
+    max_steps = 5000
     reward = 0
     done = False
     step = 0
