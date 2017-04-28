@@ -154,7 +154,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
         print(("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward)))
         print(("Total Step: " + str(step)))
-        print("")
+
 
     env.end()  # This is for shutting down TORCS
     print("Finish.")
