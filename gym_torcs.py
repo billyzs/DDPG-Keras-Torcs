@@ -207,9 +207,9 @@ class TorcsEnv:
         os.system('pkill torcs')
         time.sleep(0.5)
         if self.vision is True:
-            os.system('torcs -nofuel -nodamage -nolaptime -vision &')
+            os.system('torcs -nofuel -nodamage -nolaptime -vision -a 4&')
         else:
-            os.system('torcs -nofuel -nolaptime &')
+            os.system('torcs -nofuel -nolaptime -a 4&')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)

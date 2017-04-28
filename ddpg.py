@@ -34,8 +34,8 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     vision = False
 
     EXPLORE = 100000.
-    episode_count = 2000
-    max_steps = 100000
+    episode_count = 300
+    max_steps = 5000
     reward = 0
     done = False
     step = 0
@@ -73,6 +73,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
         print(("Episode : " + str(i) + " Replay Buffer " + str(buff.count())))
 
         if np.mod(i, 3) == 0:
+            print("reset at the {0} th episode".format(i))
             ob = env.reset(relaunch=True)   #relaunch TORCS every 3 episode because of the memory leak error
         else:
             ob = env.reset()
@@ -92,7 +93,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], -0.1 , 1.00, 0.05)
 
             # The following code do the stochastic brake
-            if random.random() <= 0.1:
+            if random.random() <= 0.1 and train_indicator == 1:
                 print("********Now we apply the brake***********")
                 noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2],  0.2 , 1.00, 0.10)
 
@@ -160,4 +161,4 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
 if __name__ == "__main__":
 
-    playGame()
+    playGame(0)
