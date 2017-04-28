@@ -134,7 +134,9 @@ class TorcsEnv:
         damage = np.array(obs['damage'])
         rpm = np.array(obs['rpm'])
 
-        progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        progress = sp*np.cos(np.pi * obs['angle']) \
+                   - np.abs(sp*np.pi*np.sin(obs['angle'])) \
+                   - sp * np.abs(obs['trackPos']) - 5 * np.abs(obs['angle'])
         reward = progress
 
         # collision detection
@@ -156,6 +158,7 @@ class TorcsEnv:
 
         if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
             episode_terminate = True
+            print("!!!!!!! TRIED TO GO BACKWARDS !!!!!!")
             client.R.d['meta'] = True
 
 
@@ -253,7 +256,7 @@ class TorcsEnv:
                                speedX=np.array(raw_obs['speedX'], dtype=np.float32)/300.0,
                                speedY=np.array(raw_obs['speedY'], dtype=np.float32)/300.0,
                                speedZ=np.array(raw_obs['speedZ'], dtype=np.float32)/300.0,
-                               angle=np.array(raw_obs['angle'], dtype=np.float32)/3.1416,
+                               angle=np.array(raw_obs['angle'], dtype=np.float32)/np.pi,
                                damage=np.array(raw_obs['damage'], dtype=np.float32),
                                opponents=np.array(raw_obs['opponents'], dtype=np.float32)/200.,
                                rpm=np.array(raw_obs['rpm'], dtype=np.float32)/10000,
