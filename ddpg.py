@@ -70,7 +70,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
     print("TORCS Experiment Start.")
     for i in range(episode_count):
 
-        print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
+        print(("Episode : " + str(i) + " Replay Buffer " + str(buff.count())))
 
         if np.mod(i, 3) == 0:
             ob = env.reset(relaunch=True)   #relaunch TORCS every 3 episode because of the memory leak error
@@ -134,7 +134,7 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
             total_reward += r_t
             s_t = s_t1
         
-            print("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss)
+            print(("Episode", i, "Step", step, "Action", a_t, "Reward", r_t, "Loss", loss))
         
             step += 1
             if done:
@@ -151,8 +151,8 @@ def playGame(train_indicator=0):    #1 means Train, 0 means simply Run
                 with open("criticmodel.json", "w") as outfile:
                     json.dump(critic.model.to_json(), outfile)
 
-        print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
-        print("Total Step: " + str(step))
+        print(("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward)))
+        print(("Total Step: " + str(step)))
         print("")
 
     env.end()  # This is for shutting down TORCS
