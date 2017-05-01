@@ -20,11 +20,12 @@ OU = OU()       #Ornstein-Uhlenbeck Process
 
 def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     BUFFER_SIZE = 100000
-    BATCH_SIZE = 32
+    BATCH_SIZE = 64
     GAMMA = 0.99
     TAU = 0.001     #Target Network HyperParameters
-    LRA = 1e-3  # 0.0001    #Learning rate for Actor
-    LRC = 1e-3  #0.001     #Lerning rate for Critic
+    LRA = 0.0001    #Learning rate for Actor
+    LRC = 0.001     #Lerning rate for Critic
+
 
     action_dim = 3  #Steering/Acceleration/Brake
     state_dim = 29  #of sensors input
@@ -34,7 +35,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
     vision = False
 
     EXPLORE = 100000.
-    episode_count = 300
+    episode_count = 3000
     max_steps = 5000
     reward = 0
     done = False
@@ -77,8 +78,8 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             ob = env.reset(relaunch=True)   #relaunch TORCS every 3 episode because of the memory leak error
         else:
             ob = env.reset()
-
-        s_t = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY,  ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm))
+        # normalize input. Track has width 10 so divide trackPos by 5
+        s_t = np.hstack((ob.angle, ob.track/200.0, ob.trackPos, ob.speedX/200.0, ob.speedY/200.0,  ob.speedZ/200.0, ob.wheelSpinVel/100.0, ob.rpm/10.0))
      
         total_reward = 0.
         for j in range(max_steps):
@@ -86,29 +87,41 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             epsilon -= 1.0 / EXPLORE
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
-            
+
             a_t_original = actor.model.predict(s_t.reshape(1, s_t.shape[0]))
+            if train_indicator and np.random.rand() < 0.5*epsilon:
+                a_t_original[0][0] *= -1
             noise_t[0][0] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
             noise_t[0][1] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
             noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2], -0.1 , 1.00, 0.05)
 
             # The following code do the stochastic brake
             if random.random() <= 0.1 and train_indicator == 1:
-                print("********Now we apply the brake***********")
-                noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2],  0.2 , 1.00, 0.10)
+                 print("********Now we apply the brake***********")
+                 noise_t[0][2] = train_indicator * max(epsilon, 0) * OU.function(a_t_original[0][2],  0.2 , 1.00, 0.10)
 
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
+            a_t[0][0] *= 0.5
+            if train_indicator:
+                if np.random.rand() > 0.5 * :
+                    a_t[0][0] *= -1
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
             a_t[0][2] = a_t_original[0][2] + noise_t[0][2]
 
             ob, r_t, done, info = env.step(a_t[0])
 
-            s_t1 = np.hstack((ob.angle, ob.track, ob.trackPos, ob.speedX, ob.speedY, ob.speedZ, ob.wheelSpinVel/100.0, ob.rpm))
+            s_t1 = np.hstack((ob.angle, ob.track/200.0, ob.trackPos, ob.speedX/200.0, ob.speedY/200.0, ob.speedZ/200.0, ob.wheelSpinVel/100.0, ob.rpm/10.0))
         
             buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
             
             #Do the batch update
+
+
+
+
             batch = buff.getBatch(BATCH_SIZE)
+
+
             states = np.asarray([e[0] for e in batch])
             actions = np.asarray([e[1] for e in batch])
             rewards = np.asarray([e[2] for e in batch])
@@ -161,4 +174,4 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
 
 if __name__ == "__main__":
 
-    playGame(0)
+    playGame(1)

@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from keras.initializations import normal, identity
+from keras.initializations import normal, glorot_uniform
 from keras.models import model_from_json
 from keras.models import Sequential, Model
 from keras.engine.training import collect_trainable_weights
@@ -48,9 +48,9 @@ class ActorNetwork(object):
         S = Input(shape=[state_size])   
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(S)
         h1 = Dense(HIDDEN2_UNITS, activation='relu')(h0)
-        Steering = Dense(1,activation='tanh',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1)  
-        Acceleration = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1)   
-        Brake = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1) 
+        Steering = Dense(1,activation='tanh',init=lambda shape, name: glorot_uniform(shape, name=name, dim_ordering='tf'))(h1)
+        Acceleration = Dense(1,activation='sigmoid',init=lambda shape, name: glorot_uniform(shape, name=name, dim_ordering='tf'))(h1)
+        Brake = Dense(1,activation='sigmoid',init=lambda shape, name: glorot_uniform(shape, name=name, dim_ordering='tf'))(h1)
         V = merge([Steering,Acceleration,Brake],mode='concat')          
         model = Model(input=S,output=V)
         return model, model.trainable_weights, S

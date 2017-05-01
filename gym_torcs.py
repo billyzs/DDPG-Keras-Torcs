@@ -21,7 +21,7 @@ class TorcsEnv:
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
-
+        self.lowSpeedCounter = 0
         self.initial_run = True
 
         ##print("launch torcs")
@@ -134,7 +134,7 @@ class TorcsEnv:
         damage = np.array(obs['damage'])
         rpm = np.array(obs['rpm'])
 
-        progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        progress = (sp-5)*np.cos(np.pi * obs['angle']) - np.abs(sp*np.pi * np.sin(obs['angle'])) - 5 * np.abs(obs['trackPos'])
         reward = progress
 
         # collision detection
@@ -153,8 +153,10 @@ class TorcsEnv:
         #        print("No progress")
         #        episode_terminate = True
         #        client.R.d['meta'] = True
+        if sp < 5:
+            self.lowSpeedCounter += 1
 
-        if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+        if np.cos(obs['angle']) < 0 or self.lowSpeedCounter > 200:  # Episode is terminated if the agent runs backward
             episode_terminate = True
             client.R.d['meta'] = True
 
@@ -169,7 +171,7 @@ class TorcsEnv:
 
     def reset(self, relaunch=False):
         #print("Reset")
-
+        self.lowSpeedCounter = 0
         self.time_step = 0
 
         if self.initial_reset is not True:
@@ -203,6 +205,7 @@ class TorcsEnv:
         return self.observation
 
     def reset_torcs(self):
+        self.lowSpeedCounter = 0
        #print("relaunch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
