@@ -103,7 +103,7 @@ def playGame(train_indicator=1):    #1 means Train, 0 means simply Run
             a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
             a_t[0][0] *= 0.5
             if train_indicator:
-                if np.random.rand() > 0.5 * :
+                if np.random.rand() < 0.5 * epsilon:
                     a_t[0][0] *= -1
             a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
             a_t[0][2] = a_t_original[0][2] + noise_t[0][2]
